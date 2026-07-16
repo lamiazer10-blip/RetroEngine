@@ -1,0 +1,63 @@
+name: Build Release APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Unzip project
+        run: |
+          ZIP_FILE=$(find . -maxdepth 1 -iname "*.zip" | head -n 1)
+          if [ -z "$ZIP_FILE" ]; then
+            echo "No .zip file found in repo root. Upload RetroEngine-fixed.zip to the repo root first."
+            exit 1
+          fi
+          echo "Found $ZIP_FILE"
+          unzip -q "$ZIP_FILE" -d extracted
+          if [ -d "extracted/RetroEngine" ]; then
+            mv extracted/RetroEngine project
+          else
+            mv extracted project
+          fi
+          echo "Project extracted to ./project"
+          ls project
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: project/package-lock.json
+
+      - name: Install npm dependencies
+        working-directory: project
+        run: npm install
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Make gradlew executable
+        run: chmod +x project/android/gradlew
+
+      - name: Build release APK
+        working-directory: project/android
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: project/android/app/build/outputs/apk/release/app-release.apk
