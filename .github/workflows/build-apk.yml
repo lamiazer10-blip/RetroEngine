@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    env:
+      CI: true
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -53,7 +55,7 @@ jobs:
 
       - name: Build release APK
         working-directory: project/android
-        run: ./gradlew assembleRelease --stacktrace --console=plain
+        run: ./gradlew assembleRelease --stacktrace --console=plain --info
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
