@@ -55,7 +55,7 @@ jobs:
 
       - name: Build release APK
         working-directory: project/android
-        run: ./gradlew assembleRelease --stacktrace --console=plain --info
+        run: ./gradlew assembleRelease --stacktrace --console=plain
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
