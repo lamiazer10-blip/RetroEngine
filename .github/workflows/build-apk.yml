@@ -37,9 +37,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Verify package.json
-        run: cat project/package.json
-
       - name: Install npm dependencies
         working-directory: project
         run: npm install
@@ -59,7 +56,21 @@ jobs:
       - name: Build release APK
         working-directory: project/android
         run: |
-          ./gradlew assembleRelease --stacktrace --console=plain 2>&1 | tee ../../build-log.txt
+          {
+            echo "===== package.json used in this run ====="
+            cat ../package.json
+            echo ""
+            echo "===== node_modules/react-native-screens present? ====="
+            if [ -d "../node_modules/react-native-screens" ]; then
+              echo "YES - react-native-screens IS installed in node_modules"
+              cat ../node_modules/react-native-screens/package.json | grep version
+            else
+              echo "NO - react-native-screens is NOT installed"
+            fi
+            echo ""
+            echo "===== Gradle build output ====="
+          } > ../../build-log.txt
+          ./gradlew assembleRelease --stacktrace --console=plain 2>&1 | tee -a ../../build-log.txt
           exit ${PIPESTATUS[0]}
         shell: bash
 
