@@ -37,6 +37,9 @@ jobs:
         with:
           node-version: 20
 
+      - name: Verify package.json
+        run: cat project/package.json
+
       - name: Install npm dependencies
         working-directory: project
         run: npm install
